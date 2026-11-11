@@ -5,175 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Estimate & Quotation</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Client-side PDF Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-gray-100 p-3 sm:p-6 font-sans text-gray-800">
 
-  <!-- Main Form Screen -->
-  <div id="appContainer" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md border border-gray-200">
-    
-    <div class="flex justify-between items-center border-b pb-4 mb-4">
-      <div>
-        <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
-        <p class="text-xs text-gray-500">Professional Services & Solutions</p>
-      </div>
-      <div class="text-right">
-        <label class="text-xs text-gray-500 block">Date:</label>
-        <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm bg-white">
-      </div>
-    </div>
-
-    <!-- Client Details -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <label class="text-xs font-semibold text-gray-600 block mb-1">Customer / Client Name:</label>
-        <input type="text" id="custName" placeholder="Client Name" class="w-full border rounded px-3 py-1.5 text-sm">
-      </div>
-      <div>
-        <label class="text-xs font-semibold text-gray-600 block mb-1">Contact / Mobile:</label>
-        <input type="text" id="custPhone" placeholder="Mobile Number" class="w-full border rounded px-3 py-1.5 text-sm">
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm mb-4 border">
-        <thead class="bg-gray-100 border-b">
-          <tr>
-            <th class="p-2 border-r">Description</th>
-            <th class="p-2 border-r w-24 text-center">Qty</th>
-            <th class="p-2 border-r w-28 text-right">Rate (₹)</th>
-            <th class="p-2 border-r w-28 text-right">Total (₹)</th>
-            <th class="p-2 w-12 text-center">Action</th>
-          </tr>
-        </thead>
-        <tbody id="itemsBody">
-          <tr class="border-b">
-            <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
-            <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
-            <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
-            <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-            <td class="p-1 text-center"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mb-4">
-      <button onclick="addRow()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-3 py-1.5 rounded font-medium">+ Add Item</button>
-    </div>
-
-    <!-- Summary -->
-    <div class="flex justify-end border-t pt-4">
-      <div class="w-64 space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span>Sub Total:</span>
-          <span class="font-medium" id="subTotal">₹0.00</span>
+  <div class="max-w-3xl mx-auto">
+    <!-- Invoice Box (This entire container will be exported to PDF) -->
+    <div id="invoiceCard" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <div>
+          <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
+          <p class="text-xs text-gray-500">Professional Services & Solutions</p>
         </div>
-        <div class="flex justify-between items-center text-xs text-gray-600">
-          <label><input type="checkbox" id="gstCheck" onchange="calculate()"> Add GST (18%)</label>
-          <span id="gstAmount">₹0.00</span>
-        </div>
-        <div class="flex justify-between text-base font-bold border-t pt-2 text-blue-700">
-          <span>Grand Total:</span>
-          <span id="grandTotal">₹0.00</span>
+        <div class="text-right">
+          <label class="text-xs text-gray-500 block">Date:</label>
+          <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm bg-white">
         </div>
       </div>
-    </div>
 
-    <!-- Actions -->
-    <div class="mt-6 flex justify-end gap-3 border-t pt-4">
-      <!-- Direct clean link that bypasses Google Sites iframe popup block -->
-      <a id="printLink" href="?view=print" target="_blank" onclick="preparePrint(event)" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium inline-block text-center cursor-pointer">
-        Print / Save as PDF
-      </a>
-    </div>
-
-  </div>
-
-  <!-- Print View Container (Only shown when ?view=print in URL) -->
-  <div id="printContainer" class="hidden bg-white p-8 max-w-3xl mx-auto">
-    <div class="flex justify-between border-b-2 border-blue-600 pb-4 mb-4">
-      <div>
-        <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
-        <p class="text-xs text-gray-500">Professional Services & Solutions</p>
-      </div>
-      <div class="text-right text-sm">
-        <strong>Date:</strong> <span id="pDate"></span>
-      </div>
-    </div>
-
-    <div class="flex justify-between text-sm mb-6">
-      <div><strong>Client:</strong> <span id="pName"></span></div>
-      <div><strong>Mobile:</strong> <span id="pPhone"></span></div>
-    </div>
-
-    <table class="w-full text-left text-sm mb-6 border-collapse">
-      <thead>
-        <tr class="bg-gray-100 border border-gray-300">
-          <th class="p-2 border border-gray-300">Description</th>
-          <th class="p-2 border border-gray-300 text-center w-20">Qty</th>
-          <th class="p-2 border border-gray-300 text-right w-24">Rate (₹)</th>
-          <th class="p-2 border border-gray-300 text-right w-28">Total (₹)</th>
-        </tr>
-      </thead>
-      <tbody id="pItems"></tbody>
-    </table>
-
-    <div class="flex justify-end">
-      <div class="w-64 space-y-1 text-sm">
-        <div class="flex justify-between">
-          <span>Sub Total:</span> <span id="pSub"></span>
+      <!-- Client Details -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Customer / Client Name:</label>
+          <input type="text" id="custName" placeholder="Client Name" class="w-full border rounded px-3 py-1.5 text-sm">
         </div>
-        <div id="pGstRow" class="flex justify-between">
-          <span>GST (18%):</span> <span id="pGst"></span>
-        </div>
-        <div class="flex justify-between font-bold text-base border-t-2 border-blue-600 pt-1 text-blue-700">
-          <span>Grand Total:</span> <span id="pGrand"></span>
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Contact / Mobile:</label>
+          <input type="text" id="custPhone" placeholder="Mobile Number" class="w-full border rounded px-3 py-1.5 text-sm">
         </div>
       </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm mb-4 border">
+          <thead class="bg-gray-100 border-b">
+            <tr>
+              <th class="p-2 border-r">Description</th>
+              <th class="p-2 border-r w-24 text-center">Qty</th>
+              <th class="p-2 border-r w-28 text-right">Rate (₹)</th>
+              <th class="p-2 border-r w-28 text-right">Total (₹)</th>
+              <th class="p-2 w-12 text-center action-col">Action</th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody">
+            <tr class="border-b">
+              <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
+              <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
+              <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
+              <td class="p-2 border-r text-right font-medium row-total">0.00</td>
+              <td class="p-1 text-center action-col"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mb-4 action-col">
+        <button onclick="addRow()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-3 py-1.5 rounded font-medium">+ Add Item</button>
+      </div>
+
+      <!-- Summary -->
+      <div class="flex justify-end border-t pt-4">
+        <div class="w-64 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span>Sub Total:</span>
+            <span class="font-medium" id="subTotal">₹0.00</span>
+          </div>
+          <div class="flex justify-between items-center text-xs text-gray-600">
+            <label><input type="checkbox" id="gstCheck" onchange="calculate()"> Add GST (18%)</label>
+            <span id="gstAmount">₹0.00</span>
+          </div>
+          <div class="flex justify-between text-base font-bold border-t pt-2 text-blue-700">
+            <span>Grand Total:</span>
+            <span id="grandTotal">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Actions Footer -->
+    <div class="mt-4 flex justify-end gap-3">
+      <button id="downloadBtn" onclick="downloadPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded text-sm font-semibold shadow">
+        Download PDF Bill
+      </button>
     </div>
   </div>
 
   <script>
-    // URL check: Agar ?view=print hai toh printable invoice dikhao aur print trigger karo
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('view') === 'print') {
-      document.getElementById('appContainer').classList.add('hidden');
-      const pContainer = document.getElementById('printContainer');
-      pContainer.classList.remove('hidden');
-
-      const data = JSON.parse(localStorage.getItem('estimate_print_data') || '{}');
-      document.getElementById('pDate').textContent = data.date || '-';
-      document.getElementById('pName').textContent = data.custName || '-';
-      document.getElementById('pPhone').textContent = data.custPhone || '-';
-      document.getElementById('pSub').textContent = data.subTotal || '₹0.00';
-      document.getElementById('pGrand').textContent = data.grandTotal || '₹0.00';
-
-      if (data.isGst) {
-        document.getElementById('pGst').textContent = data.gstAmount || '₹0.00';
-      } else {
-        document.getElementById('pGstRow').style.display = 'none';
-      }
-
-      const tbody = document.getElementById('pItems');
-      (data.items || []).forEach(it => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-300';
-        tr.innerHTML = `
-          <td class="p-2 border border-gray-300">${it.desc}</td>
-          <td class="p-2 border border-gray-300 text-center">${it.qty}</td>
-          <td class="p-2 border border-gray-300 text-right">₹${it.rate}</td>
-          <td class="p-2 border border-gray-300 text-right font-medium">₹${it.total}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      window.onload = function() {
-        window.print();
-      };
-    } else {
-      document.getElementById('docDate').valueAsDate = new Date();
-    }
+    document.getElementById('docDate').valueAsDate = new Date();
 
     function addRow() {
       const tbody = document.getElementById('itemsBody');
@@ -184,7 +105,7 @@
         <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
         <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
         <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-        <td class="p-1 text-center"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+        <td class="p-1 text-center action-col"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
       `;
       tbody.appendChild(tr);
     }
@@ -217,30 +138,40 @@
       document.getElementById('grandTotal').textContent = '₹' + (sub + gst).toFixed(2);
     }
 
-    // Google Sites iframe safe data saving
-    function preparePrint(e) {
-      const items = [];
-      document.querySelectorAll('#itemsBody tr').forEach(row => {
-        items.push({
-          desc: row.querySelector('.desc').value || '-',
-          qty: row.querySelector('.qty').value || '0',
-          rate: row.querySelector('.rate').value || '0',
-          total: row.querySelector('.row-total').textContent
-        });
-      });
+    // Direct PDF generator and downloader (Works inside Google Sites iframe)
+    function downloadPDF() {
+      const btn = document.getElementById('downloadBtn');
+      btn.innerText = "Generating PDF...";
+      btn.disabled = true;
 
-      const printData = {
-        date: document.getElementById('docDate').value,
-        custName: document.getElementById('custName').value || 'Customer',
-        custPhone: document.getElementById('custPhone').value || '-',
-        subTotal: document.getElementById('subTotal').textContent,
-        gstAmount: document.getElementById('gstAmount').textContent,
-        grandTotal: document.getElementById('grandTotal').textContent,
-        isGst: document.getElementById('gstCheck').checked,
-        items: items
+      // Temporary hide action elements like delete buttons and "+ Add item"
+      const actionCols = document.querySelectorAll('.action-col');
+      actionCols.forEach(el => el.style.display = 'none');
+
+      const element = document.getElementById('invoiceCard');
+      const custName = document.getElementById('custName').value.trim() || 'Quotation';
+      const filename = custName + '_Estimate.pdf';
+
+      const opt = {
+        margin:       10,
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      localStorage.setItem('estimate_print_data', JSON.stringify(printData));
+      html2pdf().set(opt).from(element).save().then(() => {
+        // Restore actions after download completes
+        actionCols.forEach(el => el.style.display = '');
+        btn.innerText = "Download PDF Bill";
+        btn.disabled = false;
+      }).catch(err => {
+        console.error(err);
+        actionCols.forEach(el => el.style.display = '');
+        btn.innerText = "Download PDF Bill";
+        btn.disabled = false;
+        alert("PDF download failed. Please try again.");
+      });
     }
   </script>
 </body>
