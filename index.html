@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body { background: white !important; padding: 0 !important; }
+      .no-print { display: none !important; }
+      .print-box { box-shadow: none !important; border: none !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-4 font-sans text-gray-800">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md print-box">
+    
+    <div class="flex justify-between items-center border-b pb-4 mb-4">
+      <div>
+        <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
+        <p class="text-xs text-gray-500">Professional Services & Solutions</p>
+      </div>
+      <div class="text-right">
+        <label class="text-xs text-gray-500 block">Date:</label>
+        <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm">
+      </div>
+    </div>
+
+    <!-- Client Details -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="text-xs font-semibold text-gray-600 block mb-1">Customer / Client Name:</label>
+        <input type="text" id="custName" placeholder="Client Name" class="w-full border rounded px-3 py-1.5 text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600 block mb-1">Contact / Mobile:</label>
+        <input type="text" id="custPhone" placeholder="Mobile Number" class="w-full border rounded px-3 py-1.5 text-sm">
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table class="w-full text-left text-sm mb-4 border">
+      <thead class="bg-gray-100 border-b">
+        <tr>
+          <th class="p-2 border-r">Description</th>
+          <th class="p-2 border-r w-24 text-center">Qty</th>
+          <th class="p-2 border-r w-28 text-right">Rate (₹)</th>
+          <th class="p-2 border-r w-28 text-right">Total (₹)</th>
+          <th class="p-2 w-12 text-center no-print">Action</th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <tr class="border-b">
+          <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
+          <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
+          <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
+          <td class="p-2 border-r text-right font-medium row-total">0.00</td>
+          <td class="p-1 text-center no-print"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="no-print mb-4">
+      <button onclick="addRow()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-3 py-1.5 rounded font-medium">+ Add Item</button>
+    </div>
+
+    <!-- Summary -->
+    <div class="flex justify-end border-t pt-4">
+      <div class="w-64 space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span>Sub Total:</span>
+          <span class="font-medium" id="subTotal">₹0.00</span>
+        </div>
+        <div class="flex justify-between items-center text-xs text-gray-600">
+          <label><input type="checkbox" id="gstCheck" onchange="calculate()"> Add GST (18%)</label>
+          <span id="gstAmount">₹0.00</span>
+        </div>
+        <div class="flex justify-between text-base font-bold border-t pt-2 text-blue-700">
+          <span>Grand Total:</span>
+          <span id="grandTotal">₹0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-6 flex justify-end gap-3 no-print border-t pt-4">
+      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium">
+        Print / Save as PDF
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    document.getElementById('docDate').valueAsDate = new Date();
+
+    function addRow() {
+      const tbody = document.getElementById('itemsBody');
+      const tr = document.createElement('tr');
+      tr.className = 'border-b';
+      tr.innerHTML = `
+        <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
+        <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
+        <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
+        <td class="p-2 border-r text-right font-medium row-total">0.00</td>
+        <td class="p-1 text-center no-print"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function removeRow(btn) {
+      const rows = document.querySelectorAll('#itemsBody tr');
+      if (rows.length > 1) {
+        btn.closest('tr').remove();
+        calculate();
+      }
+    }
+
+    function calculate() {
+      let sub = 0;
+      document.querySelectorAll('#itemsBody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.rate').value) || 0;
+        const total = qty * rate;
+        row.querySelector('.row-total').textContent = total.toFixed(2);
+        sub += total;
+      });
+
+      document.getElementById('subTotal').textContent = '₹' + sub.toFixed(2);
+
+      let gst = 0;
+      if (document.getElementById('gstCheck').checked) {
+        gst = sub * 0.18;
+      }
+      document.getElementById('gstAmount').textContent = '₹' + gst.toFixed(2);
+      document.getElementById('grandTotal').textContent = '₹' + (sub + gst).toFixed(2);
+    }
+  </script>
+</body>
+</html>
