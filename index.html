@@ -1,260 +1,519 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estimate / Quotation</title>
+  <title>Smart Billing & Quotation System</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-border-none {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-4 font-sans text-gray-800">
+<body class="bg-slate-100 text-slate-800 font-sans p-2 sm:p-6 min-h-screen">
 
-  <!-- FORM SCREEN (Exactly matching your UI) -->
-  <div id="mainApp" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md border border-gray-200">
+  <!-- ================= MASTER APP CONTAINER ================= -->
+  <div id="mainBillingApp" class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden print-border-none">
     
-    <div class="flex justify-between items-start border-b pb-4 mb-4">
-      <div>
-        <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
-        <p class="text-xs text-gray-500">Professional Services & Solutions</p>
-      </div>
-      <div class="text-right">
-        <label class="text-xs text-gray-500 block mb-1">Date:</label>
-        <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm bg-white outline-none">
+    <!-- Top Bar / Brand Header -->
+    <div class="bg-slate-900 text-white p-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded tracking-wide uppercase">Official</span>
+            <input type="text" id="bizTitle" value="MARUTHI TECHNOLOGIES" class="bg-transparent text-xl sm:text-2xl font-bold tracking-wide outline-none border-b border-transparent hover:border-slate-600 focus:border-blue-500 text-white w-full max-w-md">
+          </div>
+          <input type="text" id="bizSubtitle" value="Security Systems, Networking & Electrical Solutions" class="bg-transparent text-xs text-slate-400 mt-1 outline-none border-b border-transparent hover:border-slate-600 focus:border-blue-500 w-full max-w-md">
+          <div class="flex flex-wrap gap-4 text-xs text-slate-400 mt-2">
+            <span>Contact: <input type="text" id="bizPhone" value="+91 9876543210" class="bg-transparent text-slate-300 outline-none w-32 border-b border-transparent hover:border-slate-600"></span>
+            <span>GSTIN: <input type="text" id="bizGst" value="27AAAAA0000A1Z5" class="bg-transparent text-slate-300 outline-none w-36 border-b border-transparent hover:border-slate-600"></span>
+          </div>
+        </div>
+
+        <!-- Document Metas -->
+        <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700 space-y-2 text-xs w-full md:w-auto">
+          <div class="flex items-center justify-between gap-3">
+            <label class="text-slate-400">Doc Type:</label>
+            <select id="docType" class="bg-slate-900 border border-slate-600 text-white px-2 py-1 rounded text-xs outline-none">
+              <option value="ESTIMATE / QUOTATION">Estimate / Quotation</option>
+              <option value="TAX INVOICE">Tax Invoice</option>
+              <option value="BILL OF SUPPLY">Bill of Supply</option>
+            </select>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <label class="text-slate-400">Bill/Est No:</label>
+            <input type="text" id="billNo" class="bg-slate-900 border border-slate-600 text-white px-2 py-1 rounded text-xs w-32 outline-none font-mono">
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <label class="text-slate-400">Issue Date:</label>
+            <input type="date" id="billDate" class="bg-slate-900 border border-slate-600 text-white px-2 py-1 rounded text-xs outline-none">
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Client Details -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <label class="text-xs font-semibold text-gray-600 block mb-1">Customer / Client Name:</label>
-        <input type="text" id="custName" placeholder="Client Name" class="w-full border rounded px-3 py-1.5 text-sm outline-none focus:border-blue-600">
+    <!-- Bill Content Area -->
+    <div class="p-4 sm:p-6 space-y-6">
+
+      <!-- Client Info Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Customer / Client Details</label>
+          <input type="text" id="custName" placeholder="Client / Business Name *" class="w-full border border-slate-300 rounded px-3 py-1.5 text-sm bg-white mb-2 outline-none focus:border-blue-600">
+          <textarea id="custAddress" rows="2" placeholder="Site / Delivery Address" class="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white outline-none focus:border-blue-600"></textarea>
+        </div>
+        <div class="flex flex-col justify-between">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Contact Details</label>
+            <input type="text" id="custPhone" placeholder="Mobile Number" class="w-full border border-slate-300 rounded px-3 py-1.5 text-sm bg-white mb-2 outline-none focus:border-blue-600">
+            <input type="text" id="custGst" placeholder="Client GSTIN (Optional)" class="w-full border border-slate-300 rounded px-3 py-1.5 text-xs bg-white outline-none focus:border-blue-600">
+          </div>
+          <div class="text-[11px] text-slate-500 italic mt-2">
+            Fields marked with * will appear prominently on the final printed estimate.
+          </div>
+        </div>
       </div>
+
+      <!-- Items Table -->
+      <div class="overflow-x-auto border border-slate-200 rounded-lg">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead class="bg-slate-100 text-slate-700 uppercase text-xs border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-12 text-center border-r border-slate-200">#</th>
+              <th class="p-3 border-r border-slate-200">Item / Service Description</th>
+              <th class="p-3 w-24 text-center border-r border-slate-200">Qty</th>
+              <th class="p-3 w-32 text-right border-r border-slate-200">Rate (₹)</th>
+              <th class="p-3 w-32 text-right border-r border-slate-200">Total (₹)</th>
+              <th class="p-3 w-14 text-center no-print">Action</th>
+            </tr>
+          </thead>
+          <tbody id="itemsContainer" class="divide-y divide-slate-200">
+            <!-- Row 1 Default -->
+            <tr class="item-row">
+              <td class="p-2 text-center text-slate-400 border-r border-slate-200 row-num">1</td>
+              <td class="p-2 border-r border-slate-200">
+                <input type="text" class="w-full px-2 py-1 outline-none text-sm item-desc focus:bg-blue-50/50 rounded" placeholder="E.g. Hikvision 2MP IP Camera / CAT6 Cable">
+              </td>
+              <td class="p-2 border-r border-slate-200">
+                <input type="number" min="1" value="1" class="w-full text-center px-2 py-1 border border-slate-300 rounded outline-none text-sm item-qty" oninput="calculateGrandTotal()">
+              </td>
+              <td class="p-2 border-r border-slate-200">
+                <input type="number" min="0" step="any" value="0" class="w-full text-right px-2 py-1 border border-slate-300 rounded outline-none text-sm item-rate" oninput="calculateGrandTotal()">
+              </td>
+              <td class="p-2 text-right font-medium text-slate-800 border-r border-slate-200 item-amount">0.00</td>
+              <td class="p-2 text-center no-print">
+                <button type="button" onclick="deleteItemRow(this)" class="text-red-500 hover:text-red-700 font-bold px-2 py-1">✕</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Add Row & Quick Action Buttons -->
+      <div class="flex justify-between items-center no-print">
+        <button type="button" onclick="addItemRow()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold px-4 py-2 rounded shadow-sm transition">
+          + Add New Item
+        </button>
+        <button type="button" onclick="clearAllRows()" class="text-xs text-slate-500 hover:text-red-600 underline">
+          Clear Table
+        </button>
+      </div>
+
+      <!-- Financial Calculation & Footer Notes -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-200 pt-6">
+        
+        <!-- Left: Payment details & Notes -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bank / UPI Payment Details</label>
+            <textarea id="bankDetails" rows="2" class="w-full border border-slate-300 rounded p-2 text-xs text-slate-700 bg-white outline-none" placeholder="Bank: HDFC Bank | A/C: 1234567890&#10;IFSC: HDFC0001234 | UPI ID: company@upi"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Terms & Conditions</label>
+            <textarea id="termsConditions" rows="3" class="w-full border border-slate-300 rounded p-2 text-xs text-slate-700 bg-white outline-none" placeholder="1. 50% advance along with work order.&#10;2. Warranty as per manufacturer terms.&#10;3. Estimate valid for 15 days."></textarea>
+          </div>
+        </div>
+
+        <!-- Right: Calculation Box -->
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3 text-sm">
+          <div class="flex justify-between text-slate-600">
+            <span>Sub Total:</span>
+            <span class="font-semibold text-slate-800" id="valSubTotal">₹0.00</span>
+          </div>
+
+          <!-- Discount Field -->
+          <div class="flex justify-between items-center text-xs text-slate-600">
+            <span class="flex items-center gap-1">Discount (₹):</span>
+            <input type="number" id="valDiscount" value="0" min="0" oninput="calculateGrandTotal()" class="w-24 text-right px-2 py-0.5 border border-slate-300 rounded text-xs bg-white outline-none">
+          </div>
+
+          <!-- GST Toggle & Rows -->
+          <div class="border-t border-slate-200 pt-2 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="gstCheck" onchange="calculateGrandTotal()" class="mr-2 rounded text-blue-600">
+                Apply GST (18%)
+              </label>
+              <span class="text-xs text-slate-400" id="gstStateLabel">CGST + SGST</span>
+            </div>
+
+            <div id="gstSplitRows" class="hidden space-y-1 text-xs text-slate-500 pl-4 border-l-2 border-blue-200">
+              <div class="flex justify-between">
+                <span>Central GST (9%):</span>
+                <span id="valCgst">₹0.00</span>
+              </div>
+              <div class="flex justify-between">
+                <span>State GST (9%):</span>
+                <span id="valSgst">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grand Total Row -->
+          <div class="border-t-2 border-slate-300 pt-3 flex justify-between items-center text-base font-bold text-slate-900">
+            <span>Final Amount:</span>
+            <span class="text-blue-700 text-xl font-extrabold" id="valGrandTotal">₹0.00</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="border-t border-slate-200 pt-6 flex flex-wrap justify-between items-center gap-3 no-print">
+        <button type="button" onclick="resetForm()" class="text-xs font-medium text-slate-500 hover:text-slate-800 px-3 py-2 border border-slate-200 rounded">
+          Reset Form
+        </button>
+        <div class="flex gap-3">
+          <button type="button" onclick="triggerCleanPrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow-md transition flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Print / Save PDF Bill
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= STANDALONE PRINT INVOICE ================= -->
+  <div id="printDocument" class="hidden bg-white max-w-4xl mx-auto p-8 border border-slate-300 font-sans">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-start border-b-2 border-blue-600 pb-4 mb-4">
       <div>
-        <label class="text-xs font-semibold text-gray-600 block mb-1">Contact / Mobile:</label>
-        <input type="text" id="custPhone" placeholder="Mobile Number" class="w-full border rounded px-3 py-1.5 text-sm outline-none focus:border-blue-600">
+        <h1 class="text-2xl font-black text-blue-800 tracking-tight" id="pBizTitle"></h1>
+        <p class="text-xs text-slate-600" id="pBizSubtitle"></p>
+        <div class="text-xs text-slate-500 mt-1">
+          <span id="pBizPhone"></span> | GSTIN: <span id="pBizGst"></span>
+        </div>
+      </div>
+      <div class="text-right">
+        <h2 class="text-xl font-bold text-slate-800 uppercase" id="pDocType"></h2>
+        <div class="text-xs text-slate-600 mt-1">
+          <div><strong>Doc No:</strong> <span id="pBillNo"></span></div>
+          <div><strong>Date:</strong> <span id="pBillDate"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client Box -->
+    <div class="bg-slate-50 p-3 rounded border border-slate-200 mb-6 flex justify-between text-xs">
+      <div>
+        <span class="text-slate-400 uppercase font-semibold block mb-0.5">Billed To:</span>
+        <strong class="text-sm text-slate-800 block" id="pCustName"></strong>
+        <p class="text-slate-600 whitespace-pre-line mt-0.5" id="pCustAddress"></p>
+      </div>
+      <div class="text-right">
+        <div><strong>Mobile:</strong> <span id="pCustPhone"></span></div>
+        <div id="pCustGstRow"><strong>GSTIN:</strong> <span id="pCustGst"></span></div>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm mb-4 border">
-        <thead class="bg-gray-50 border-b">
-          <tr>
-            <th class="p-2 border-r font-semibold">Description</th>
-            <th class="p-2 border-r w-24 text-center font-semibold">Qty</th>
-            <th class="p-2 border-r w-28 text-right font-semibold">Rate (₹)</th>
-            <th class="p-2 border-r w-28 text-right font-semibold">Total (₹)</th>
-            <th class="p-2 w-14 text-center font-semibold">Action</th>
-          </tr>
-        </thead>
-        <tbody id="itemsBody">
-          <tr class="border-b">
-            <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
-            <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
-            <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
-            <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-            <td class="p-1 text-center"><button type="button" onclick="removeRow(this)" class="text-red-500 font-bold px-2 hover:text-red-700">✕</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mb-4">
-      <button type="button" onclick="addRow()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded font-medium border border-gray-300">
-        + Add Item
-      </button>
-    </div>
-
-    <!-- Summary -->
-    <div class="flex justify-end border-t pt-4">
-      <div class="w-64 space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-600">Sub Total:</span>
-          <span class="font-medium" id="subTotal">₹0.00</span>
-        </div>
-        <div class="flex justify-between items-center text-xs text-gray-600">
-          <label class="cursor-pointer flex items-center gap-1.5">
-            <input type="checkbox" id="gstCheck" onchange="calculate()" class="rounded">
-            Add GST (18%)
-          </label>
-          <span id="gstAmount">₹0.00</span>
-        </div>
-        <div class="flex justify-between text-base font-bold border-t pt-2 text-blue-700">
-          <span>Grand Total:</span>
-          <span id="grandTotal">₹0.00</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hidden Form that bypasses Google Sites iframe sandbox block -->
-    <form id="bypassForm" method="GET" target="_blank" class="mt-6 flex justify-end border-t pt-4">
-      <input type="hidden" name="print_data" id="printDataInput">
-      <button type="button" onclick="submitToPrint()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium shadow transition">
-        Print / Save as PDF
-      </button>
-    </form>
-
-  </div>
-
-  <!-- PRINT SHEET VIEW (Shown only in new tab for direct printing) -->
-  <div id="printSheet" class="hidden bg-white max-w-3xl mx-auto p-8 border border-gray-300">
-    <div class="flex justify-between border-b-2 border-blue-600 pb-4 mb-4">
-      <div>
-        <h1 class="text-2xl font-bold text-blue-700">ESTIMATE / QUOTATION</h1>
-        <p class="text-xs text-gray-500">Professional Services & Solutions</p>
-      </div>
-      <div class="text-right text-sm">
-        <strong>Date:</strong> <span id="pDate"></span>
-      </div>
-    </div>
-
-    <div class="flex justify-between text-sm mb-6 bg-gray-50 p-3 rounded border border-gray-200">
-      <div><strong>Client:</strong> <span id="pName"></span></div>
-      <div><strong>Mobile:</strong> <span id="pPhone"></span></div>
-    </div>
-
-    <table class="w-full text-left text-sm mb-6 border-collapse border border-gray-300">
+    <table class="w-full text-left border-collapse border border-slate-300 text-xs mb-6">
       <thead>
-        <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
-          <th class="p-2 border border-gray-300">Description</th>
-          <th class="p-2 border border-gray-300 text-center w-20">Qty</th>
-          <th class="p-2 border border-gray-300 text-right w-24">Rate (₹)</th>
-          <th class="p-2 border border-gray-300 text-right w-28">Total (₹)</th>
+        <tr class="bg-slate-100 text-slate-700 uppercase font-bold">
+          <th class="p-2 border border-slate-300 w-10 text-center">#</th>
+          <th class="p-2 border border-slate-300">Description of Work / Items</th>
+          <th class="p-2 border border-slate-300 w-16 text-center">Qty</th>
+          <th class="p-2 border border-slate-300 w-24 text-right">Rate (₹)</th>
+          <th class="p-2 border border-slate-300 w-28 text-right">Total (₹)</th>
         </tr>
       </thead>
       <tbody id="pItemsBody"></tbody>
     </table>
 
-    <div class="flex justify-end">
-      <div class="w-64 space-y-1.5 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-600">Sub Total:</span>
-          <span class="font-medium" id="pSub"></span>
+    <!-- Bottom Breakdown -->
+    <div class="flex justify-between items-start gap-8 text-xs border-t border-slate-200 pt-4">
+      <div class="w-1/2 space-y-3">
+        <div>
+          <h4 class="font-bold uppercase text-slate-700 mb-0.5">Payment Details:</h4>
+          <p id="pBankDetails" class="text-slate-600 whitespace-pre-line"></p>
         </div>
-        <div id="pGstRow" class="flex justify-between text-xs text-gray-600">
-          <span>GST (18%):</span>
-          <span id="pGst"></span>
+        <div>
+          <h4 class="font-bold uppercase text-slate-700 mb-0.5">Terms & Conditions:</h4>
+          <p id="pTerms" class="text-slate-600 whitespace-pre-line leading-relaxed"></p>
         </div>
-        <div class="flex justify-between font-bold text-base border-t-2 border-blue-600 pt-2 text-blue-700">
+      </div>
+
+      <div class="w-64 space-y-1.5 text-xs">
+        <div class="flex justify-between text-slate-600">
+          <span>Sub Total:</span>
+          <span class="font-medium text-slate-800" id="pSubTotal"></span>
+        </div>
+        <div id="pDiscRow" class="flex justify-between text-slate-600">
+          <span>Discount:</span>
+          <span id="pDiscount"></span>
+        </div>
+        <div id="pGstBlock" class="space-y-1 text-slate-500 border-t border-slate-200 pt-1">
+          <div class="flex justify-between">
+            <span>CGST (9%):</span>
+            <span id="pCgst"></span>
+          </div>
+          <div class="flex justify-between">
+            <span>SGST (9%):</span>
+            <span id="pSgst"></span>
+          </div>
+        </div>
+        <div class="border-t-2 border-blue-600 pt-2 flex justify-between font-bold text-sm text-blue-900">
           <span>Grand Total:</span>
-          <span id="pGrand"></span>
+          <span class="text-base" id="pGrandTotal"></span>
         </div>
       </div>
     </div>
+
+    <!-- Signatory -->
+    <div class="mt-14 pt-4 border-t border-slate-200 flex justify-between items-end text-[11px] text-slate-500">
+      <div>This is a computer generated document.</div>
+      <div class="text-center">
+        <div class="h-10"></div>
+        <div class="font-semibold text-slate-700">For, <span id="pSignBiz"></span></div>
+        <div>Authorized Signatory</div>
+      </div>
+    </div>
+
   </div>
 
+  <!-- ================= CORE LOGIC JAVASCRIPT ================= -->
   <script>
-    document.getElementById('docDate').valueAsDate = new Date();
+    // Initialize Default Dates & Invoice Serial
+    document.getElementById('billDate').valueAsDate = new Date();
+    document.getElementById('billNo').value = 'INV-' + Math.floor(10000 + Math.random() * 90000);
 
-    function addRow() {
-      const tbody = document.getElementById('itemsBody');
+    // Dynamic Row Generation
+    function addItemRow() {
+      const container = document.getElementById('itemsContainer');
+      const count = container.querySelectorAll('.item-row').length + 1;
       const tr = document.createElement('tr');
-      tr.className = 'border-b';
+      tr.className = 'item-row';
       tr.innerHTML = `
-        <td class="p-1 border-r"><input type="text" class="w-full px-2 py-1 text-sm outline-none desc" placeholder="Item description"></td>
-        <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
-        <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
-        <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-        <td class="p-1 text-center"><button type="button" onclick="removeRow(this)" class="text-red-500 font-bold px-2 hover:text-red-700">✕</button></td>
+        <td class="p-2 text-center text-slate-400 border-r border-slate-200 row-num">${count}</td>
+        <td class="p-2 border-r border-slate-200">
+          <input type="text" class="w-full px-2 py-1 outline-none text-sm item-desc focus:bg-blue-50/50 rounded" placeholder="Item or service details">
+        </td>
+        <td class="p-2 border-r border-slate-200">
+          <input type="number" min="1" value="1" class="w-full text-center px-2 py-1 border border-slate-300 rounded outline-none text-sm item-qty" oninput="calculateGrandTotal()">
+        </td>
+        <td class="p-2 border-r border-slate-200">
+          <input type="number" min="0" step="any" value="0" class="w-full text-right px-2 py-1 border border-slate-300 rounded outline-none text-sm item-rate" oninput="calculateGrandTotal()">
+        </td>
+        <td class="p-2 text-right font-medium text-slate-800 border-r border-slate-200 item-amount">0.00</td>
+        <td class="p-2 text-center no-print">
+          <button type="button" onclick="deleteItemRow(this)" class="text-red-500 hover:text-red-700 font-bold px-2 py-1">✕</button>
+        </td>
       `;
-      tbody.appendChild(tr);
+      container.appendChild(tr);
     }
 
-    function removeRow(btn) {
-      const rows = document.querySelectorAll('#itemsBody tr');
-      if (rows.length > 1) {
+    function deleteItemRow(btn) {
+      const container = document.getElementById('itemsContainer');
+      if (container.querySelectorAll('.item-row').length > 1) {
         btn.closest('tr').remove();
-        calculate();
+        renumberRows();
+        calculateGrandTotal();
       }
     }
 
-    function calculate() {
-      let sub = 0;
-      document.querySelectorAll('#itemsBody tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const rate = parseFloat(row.querySelector('.rate').value) || 0;
-        const total = qty * rate;
-        row.querySelector('.row-total').textContent = total.toFixed(2);
-        sub += total;
+    function renumberRows() {
+      document.querySelectorAll('#itemsContainer .item-row').forEach((row, idx) => {
+        row.querySelector('.row-num').textContent = idx + 1;
+      });
+    }
+
+    function clearAllRows() {
+      const container = document.getElementById('itemsContainer');
+      container.innerHTML = '';
+      addItemRow();
+      calculateGrandTotal();
+    }
+
+    // Grand Calculation Function
+    function calculateGrandTotal() {
+      let subTotal = 0;
+      document.querySelectorAll('#itemsContainer .item-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        const amount = qty * rate;
+        row.querySelector('.item-amount').textContent = amount.toFixed(2);
+        subTotal += amount;
       });
 
-      document.getElementById('subTotal').textContent = '₹' + sub.toFixed(2);
+      document.getElementById('valSubTotal').textContent = '₹' + subTotal.toFixed(2);
 
-      let gst = 0;
-      if (document.getElementById('gstCheck').checked) {
-        gst = sub * 0.18;
+      const discount = parseFloat(document.getElementById('valDiscount').value) || 0;
+      const discountedSub = Math.max(0, subTotal - discount);
+
+      let gstTotal = 0;
+      const isGst = document.getElementById('gstCheck').checked;
+      const splitRows = document.getElementById('gstSplitRows');
+
+      if (isGst) {
+        splitRows.classList.remove('hidden');
+        const halfGst = discountedSub * 0.09;
+        gstTotal = halfGst * 2;
+        document.getElementById('valCgst').textContent = '₹' + halfGst.toFixed(2);
+        document.getElementById('valSgst').textContent = '₹' + halfGst.toFixed(2);
+      } else {
+        splitRows.classList.add('hidden');
       }
-      document.getElementById('gstAmount').textContent = '₹' + gst.toFixed(2);
-      document.getElementById('grandTotal').textContent = '₹' + (sub + gst).toFixed(2);
+
+      const finalGrand = discountedSub + gstTotal;
+      document.getElementById('valGrandTotal').textContent = '₹' + finalGrand.toFixed(2);
     }
 
-    // Pack data and trigger HTML native Form submit (Bypasses Google Sites iframe sandbox)
-    function submitToPrint() {
+    // Google Sites Sandbox-Safe Print Pipeline
+    function triggerCleanPrint() {
       const items = [];
-      document.querySelectorAll('#itemsBody tr').forEach(row => {
-        const desc = row.querySelector('.desc').value.trim();
-        const qty = row.querySelector('.qty').value;
-        const rate = row.querySelector('.rate').value;
-        const total = row.querySelector('.row-total').textContent;
-        if (desc !== "" || parseFloat(rate) > 0) {
-          items.push({ desc: desc || "-", qty: qty, rate: rate, total: total });
+      document.querySelectorAll('#itemsContainer .item-row').forEach(row => {
+        const desc = row.querySelector('.item-desc').value.trim();
+        const qty = row.querySelector('.item-qty').value;
+        const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+        const total = row.querySelector('.item-amount').textContent;
+        if (desc !== "" || rate > 0) {
+          items.push({ desc: desc || "Service Item", qty: qty, rate: rate.toFixed(2), total: total });
         }
       });
 
-      const data = {
-        date: document.getElementById('docDate').value,
-        name: document.getElementById('custName').value || 'Customer',
-        phone: document.getElementById('custPhone').value || '-',
-        sub: document.getElementById('subTotal').textContent,
+      if (items.length === 0) {
+        alert("Please enter at least one item description or rate.");
+        return;
+      }
+
+      const payload = {
+        bizTitle: document.getElementById('bizTitle').value,
+        bizSubtitle: document.getElementById('bizSubtitle').value,
+        bizPhone: document.getElementById('bizPhone').value,
+        bizGst: document.getElementById('bizGst').value,
+        docType: document.getElementById('docType').value,
+        billNo: document.getElementById('billNo').value,
+        billDate: document.getElementById('billDate').value,
+        custName: document.getElementById('custName').value || 'Valued Customer',
+        custAddress: document.getElementById('custAddress').value || '',
+        custPhone: document.getElementById('custPhone').value || '-',
+        custGst: document.getElementById('custGst').value || '',
+        bankDetails: document.getElementById('bankDetails').value || 'Bank Transfer / UPI Available',
+        terms: document.getElementById('termsConditions').value || '1. Valid for 15 days.\n2. Payment as per agreed milestones.',
+        subTotal: document.getElementById('valSubTotal').textContent,
+        discount: document.getElementById('valDiscount').value,
         isGst: document.getElementById('gstCheck').checked,
-        gst: document.getElementById('gstAmount').textContent,
-        grand: document.getElementById('grandTotal').textContent,
+        cgst: document.getElementById('valCgst').textContent,
+        sgst: document.getElementById('valSgst').textContent,
+        grandTotal: document.getElementById('valGrandTotal').textContent,
         items: items
       };
 
-      document.getElementById('printDataInput').value = encodeURIComponent(JSON.stringify(data));
-      document.getElementById('bypassForm').submit();
+      const encoded = encodeURIComponent(JSON.stringify(payload));
+      window.open(window.location.origin + window.location.pathname + '?render=' + encoded, '_blank');
     }
 
-    // Check if opened as printable window
+    // Reset Form to Clean State
+    function resetForm() {
+      if (confirm("Reset current bill data?")) {
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custAddress').value = '';
+        document.getElementById('valDiscount').value = '0';
+        clearAllRows();
+      }
+    }
+
+    // Lifecycle Listener for Print Rendering Tab
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
-      const rawData = params.get('print_data');
+      const renderPayload = params.get('render');
 
-      if (rawData) {
-        document.getElementById('mainApp').style.display = 'none';
-        const sheet = document.getElementById('printSheet');
-        sheet.classList.remove('hidden');
+      if (renderPayload) {
+        document.getElementById('mainBillingApp').style.display = 'none';
+        const pDoc = document.getElementById('printDocument');
+        pDoc.classList.remove('hidden');
 
-        const parsed = JSON.parse(decodeURIComponent(rawData));
-        document.getElementById('pDate').textContent = parsed.date;
-        document.getElementById('pName').textContent = parsed.name;
-        document.getElementById('pPhone').textContent = parsed.phone;
-        document.getElementById('pSub').textContent = parsed.sub;
-        document.getElementById('pGrand').textContent = parsed.grand;
-
-        if (parsed.isGst) {
-          document.getElementById('pGst').textContent = parsed.gst;
+        const data = JSON.parse(decodeURIComponent(renderPayload));
+        document.getElementById('pBizTitle').textContent = data.bizTitle;
+        document.getElementById('pSignBiz').textContent = data.bizTitle;
+        document.getElementById('pBizSubtitle').textContent = data.bizSubtitle;
+        document.getElementById('pBizPhone').textContent = data.bizPhone;
+        document.getElementById('pBizGst').textContent = data.bizGst;
+        document.getElementById('pDocType').textContent = data.docType;
+        document.getElementById('pBillNo').textContent = data.billNo;
+        document.getElementById('pBillDate').textContent = data.billDate;
+        document.getElementById('pCustName').textContent = data.custName;
+        document.getElementById('pCustAddress').textContent = data.custAddress;
+        document.getElementById('pCustPhone').textContent = data.custPhone;
+        
+        if (data.custGst) {
+          document.getElementById('pCustGst').textContent = data.custGst;
         } else {
-          document.getElementById('pGstRow').style.display = 'none';
+          document.getElementById('pCustGstRow').style.display = 'none';
+        }
+
+        document.getElementById('pBankDetails').textContent = data.bankDetails;
+        document.getElementById('pTerms').textContent = data.terms;
+        document.getElementById('pSubTotal').textContent = data.subTotal;
+        document.getElementById('pGrandTotal').textContent = data.grandTotal;
+
+        if (parseFloat(data.discount) > 0) {
+          document.getElementById('pDiscount').textContent = '- ₹' + parseFloat(data.discount).toFixed(2);
+        } else {
+          document.getElementById('pDiscRow').style.display = 'none';
+        }
+
+        if (data.isGst) {
+          document.getElementById('pCgst').textContent = data.cgst;
+          document.getElementById('pSgst').textContent = data.sgst;
+        } else {
+          document.getElementById('pGstBlock').style.display = 'none';
         }
 
         const tbody = document.getElementById('pItemsBody');
         tbody.innerHTML = '';
-        parsed.items.forEach(it => {
-          const tr = document.createElement('tr');
-          tr.className = 'border-b border-gray-300';
-          tr.innerHTML = `
-            <td class="p-2 border border-gray-300 font-medium">${it.desc}</td>
-            <td class="p-2 border border-gray-300 text-center">${it.qty}</td>
-            <td class="p-2 border border-gray-300 text-right">₹${it.rate}</td>
-            <td class="p-2 border border-gray-300 text-right font-semibold">₹${it.total}</td>
+        data.items.forEach((it, idx) => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-300';
+          row.innerHTML = `
+            <td class="p-2 border border-slate-300 text-center text-slate-500">${idx + 1}</td>
+            <td class="p-2 border border-slate-300 font-medium text-slate-800">${it.desc}</td>
+            <td class="p-2 border border-slate-300 text-center">${it.qty}</td>
+            <td class="p-2 border border-slate-300 text-right">₹${it.rate}</td>
+            <td class="p-2 border border-slate-300 text-right font-bold text-slate-900">₹${it.total}</td>
           `;
-          tbody.appendChild(tr);
+          tbody.appendChild(row);
         });
 
+        // Trigger native print cleanly
         setTimeout(() => {
           window.print();
-        }, 300);
+        }, 350);
       }
     });
   </script>
