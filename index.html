@@ -3,16 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @media print {
-      body { background: white !important; padding: 0 !important; }
-      .no-print { display: none !important; }
-      .print-box { box-shadow: none !important; border: none !important; padding: 0 !important; }
-    }
-  </style>
 </head>
 <body class="bg-gray-100 p-4 font-sans text-gray-800">
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md print-box">
+  <div id="printArea" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md border border-gray-200">
     
     <div class="flex justify-between items-center border-b pb-4 mb-4">
       <div>
@@ -21,7 +14,7 @@
       </div>
       <div class="text-right">
         <label class="text-xs text-gray-500 block">Date:</label>
-        <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm">
+        <input type="date" id="docDate" class="border rounded px-2 py-1 text-sm bg-white">
       </div>
     </div>
 
@@ -45,7 +38,7 @@
           <th class="p-2 border-r w-24 text-center">Qty</th>
           <th class="p-2 border-r w-28 text-right">Rate (₹)</th>
           <th class="p-2 border-r w-28 text-right">Total (₹)</th>
-          <th class="p-2 w-12 text-center no-print">Action</th>
+          <th class="p-2 w-12 text-center no-print-btn">Action</th>
         </tr>
       </thead>
       <tbody id="itemsBody">
@@ -54,12 +47,12 @@
           <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
           <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
           <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-          <td class="p-1 text-center no-print"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+          <td class="p-1 text-center no-print-btn"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
         </tr>
       </tbody>
     </table>
 
-    <div class="no-print mb-4">
+    <div class="mb-4 no-print-btn">
       <button onclick="addRow()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-3 py-1.5 rounded font-medium">+ Add Item</button>
     </div>
 
@@ -82,8 +75,8 @@
     </div>
 
     <!-- Actions -->
-    <div class="mt-6 flex justify-end gap-3 no-print border-t pt-4">
-      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium">
+    <div class="mt-6 flex justify-end gap-3 border-t pt-4 no-print-btn">
+      <button onclick="printQuotation()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium">
         Print / Save as PDF
       </button>
     </div>
@@ -102,7 +95,7 @@
         <td class="p-1 border-r"><input type="number" value="1" min="1" class="w-full px-2 py-1 text-sm text-center outline-none qty" oninput="calculate()"></td>
         <td class="p-1 border-r"><input type="number" value="0" min="0" class="w-full px-2 py-1 text-sm text-right outline-none rate" oninput="calculate()"></td>
         <td class="p-2 border-r text-right font-medium row-total">0.00</td>
-        <td class="p-1 text-center no-print"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
+        <td class="p-1 text-center no-print-btn"><button onclick="removeRow(this)" class="text-red-500 font-bold px-2">✕</button></td>
       `;
       tbody.appendChild(tr);
     }
@@ -133,6 +126,109 @@
       }
       document.getElementById('gstAmount').textContent = '₹' + gst.toFixed(2);
       document.getElementById('grandTotal').textContent = '₹' + (sub + gst).toFixed(2);
+    }
+
+    // Google Sites iframe safe print function
+    function printQuotation() {
+      const dateVal = document.getElementById('docDate').value;
+      const custName = document.getElementById('custName').value || 'Customer';
+      const custPhone = document.getElementById('custPhone').value || '-';
+      const subTotal = document.getElementById('subTotal').textContent;
+      const gstAmount = document.getElementById('gstAmount').textContent;
+      const grandTotal = document.getElementById('grandTotal').textContent;
+      const isGst = document.getElementById('gstCheck').checked;
+
+      let itemsHtml = '';
+      document.querySelectorAll('#itemsBody tr').forEach(row => {
+        const desc = row.querySelector('.desc').value || '-';
+        const qty = row.querySelector('.qty').value || '0';
+        const rate = row.querySelector('.rate').value || '0';
+        const total = row.querySelector('.row-total').textContent;
+        itemsHtml += `
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 8px; border-right: 1px solid #ddd;">${desc}</td>
+            <td style="padding: 8px; border-right: 1px solid #ddd; text-align: center;">${qty}</td>
+            <td style="padding: 8px; border-right: 1px solid #ddd; text-align: right;">₹${rate}</td>
+            <td style="padding: 8px; text-align: right; font-weight: bold;">₹${total}</td>
+          </tr>
+        `;
+      });
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups for this site to print the estimate.');
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Quotation - ${custName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; color: #333; margin: 0; }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; }
+            .title { font-size: 24px; font-weight: bold; color: #1d4ed8; margin: 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; }
+            th { background-color: #f3f4f6; border: 1px solid #ddd; padding: 10px; font-size: 13px; text-align: left; }
+            td { font-size: 13px; }
+            .summary { float: right; width: 260px; line-height: 1.8; }
+            .total-row { border-top: 2px solid #1d4ed8; font-size: 16px; font-weight: bold; color: #1d4ed8; padding-top: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 class="title">ESTIMATE / QUOTATION</h1>
+              <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">Professional Services & Solutions</p>
+            </div>
+            <div style="text-align: right; font-size: 13px;">
+              <strong>Date:</strong> ${dateVal}
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 15px;">
+            <div><strong>Client:</strong> ${custName}</div>
+            <div><strong>Mobile:</strong> ${custPhone}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50%;">Description</th>
+                <th style="text-align: center; width: 15%;">Qty</th>
+                <th style="text-align: right; width: 15%;">Rate</th>
+                <th style="text-align: right; width: 20%;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Sub Total:</span> <span>${subTotal}</span>
+            </div>
+            ${isGst ? `
+            <div style="display: flex; justify-content: space-between;">
+              <span>GST (18%):</span> <span>${gstAmount}</span>
+            </div>` : ''}
+            <div class="total-row" style="display: flex; justify-content: space-between; margin-top: 8px;">
+              <span>Grand Total:</span> <span>${grandTotal}</span>
+            </div>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
   </script>
 </body>
